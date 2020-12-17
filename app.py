@@ -30,9 +30,9 @@ def get_prediction():
     source = request.json['source']
     target = request.json['target']
     text = request.json['text']
-    id = request.json['id']
+    chunk_num = request.json['chunk_num']
     translation = translator.translate(source, target, text)
-    return jsonify({"output":translation, "id": id})
+    return jsonify({"output":translation, "chunk_num": chunk_num})
 
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5000)
