@@ -6,7 +6,7 @@ from config import *
 app = Flask(__name__)
 translator = Translator(MODEL_PATH)
 
-app.config["DEBUG"] = True # turn off in prod
+app.config["DEBUG"] = False
 
 @app.route('/', methods=["GET"])
 def health_check():
