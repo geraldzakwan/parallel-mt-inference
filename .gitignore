@@ -5,7 +5,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
-data
+data/opus-mt*
 # C extensions
 *.so
 

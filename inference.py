@@ -18,7 +18,7 @@ parser.add_argument("--num_chunks", type=int, help="number of chunks")
 parser.add_argument("--url", type=str, help="service endpoint")
 
 START_TIME = default_timer()
-DEBUG = True
+DEBUG = False
 
 def preprocess_doc_to_sents(doc):
     doc = doc.translate(str.maketrans("", "", "\n"))
@@ -41,7 +41,7 @@ def generate_chunks(doc, num_chunks):
     appended_sentence = ""
 
     for i, sentence in enumerate(doc):
-        appended_sentence = appended_sentence + " " + sentence
+        appended_sentence = appended_sentence + sentence + ". "
 
         if (i + 1) % chunk_size == 0:
             sentence_chunks.append(appended_sentence)
@@ -66,76 +66,37 @@ def send_request(url, text, source_lang, target_lang, chunk_num):
 
     return resp
 
-def run_experiment(source_doc, target_doc, source_lang, target_lang, num_chunks, url):
-    source_doc_chunks = generate_chunks(source_doc, num_chunks)
-    target_doc_chunks = generate_chunks(target_doc, num_chunks)
+async def run_experiment(source_doc_chunks, source_lang, target_lang, url):
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        with requests.Session() as session:
+            loop = asyncio.get_event_loop()
 
-    for i in range(0, len(source_doc_chunks)):
-        source_chunk = source_doc_chunks[i]
-        target_chunk = target_doc_chunks[i]
+            START_TIME = default_timer()
 
-        if DEBUG:
-            print("CHUNK NUMBER")
-            print(i)
-            print("-"*50)
-            print("SOURCE CHUNK")
-            print(source_chunk)
-            print("-"*50)
-            print("TARGET CHUNK")
-            print(target_chunk)
-            print("-"*50)
+            tasks = [
+                loop.run_in_executor(
+                    executor,
+                    send_request,
+                    *(url, source_chunk, source_lang, target_lang, i)
+                )
+                for i, source_chunk in enumerate(source_doc_chunks)
+            ]
 
-        resp = send_request(url, source_chunk, source_lang, target_lang, i)
+            for resp in await asyncio.gather(*tasks):
+                data = resp.json()["data"]
 
-        if DEBUG:
-            print("RESPONSE")
-            print(resp.json())
-            print("-"*50)
+                chunk_num = data["chunk_num"]
+                text = data["text"][0]
 
-# def fetch(session, csv):
-#     base_url = "https://people.sc.fsu.edu/~jburkardt/data/csv/"
-#     with session.get(base_url + csv) as response:
-#         data = response.text
-#         if response.status_code != 200:
-#             print("FAILURE::{0}".format(url))
-#
-#         elapsed = default_timer() - START_TIME
-#         time_completed_at = "{:5.2f}s".format(elapsed)
-#         print("{0:<30} {1:>20}".format(csv, time_completed_at))
-#
-#         return data
-#
-# async def get_data_asynchronous():
-#     csvs_to_fetch = [
-#         "ford_escort.csv",
-#         "cities.csv",
-#         "hw_25000.csv",
-#         "mlb_teams_2012.csv",
-#         "nile.csv",
-#         "homes.csv",
-#         "hooke.csv",
-#         "lead_shot.csv",
-#         "news_decline.csv",
-#         "snakes_count_10000.csv",
-#         "trees.csv",
-#         "zillow.csv"
-#     ]
-#     print("{0:<30} {1:>20}".format("File", "Completed at"))
-#     with ThreadPoolExecutor(max_workers=10) as executor:
-#         with requests.Session() as session:
-#             # Set any session parameters here before calling `fetch`
-#             loop = asyncio.get_event_loop()
-#             START_TIME = default_timer()
-#             tasks = [
-#                 loop.run_in_executor(
-#                     executor,
-#                     fetch,
-#                     *(session, csv) # Allows us to pass in multiple arguments to `fetch`
-#                 )
-#                 for csv in csvs_to_fetch
-#             ]
-#             for response in await asyncio.gather(*tasks):
-#                 pass
+                if DEBUG:
+                    print("RESPONSE CHUNK NUM")
+                    print(chunk_num)
+                    print("-"*50)
+                    print(text)
+                    print("-"*50)
+
+                with open("data/result/{}-{}/{}/{}".format(source_lang, target_lang, len(source_doc_chunks), chunk_num), "w") as outfile:
+                    outfile.write(text)
 
 if __name__ == "__main__":
     args = parser.parse_args()
@@ -144,33 +105,31 @@ if __name__ == "__main__":
         args.source_lang + "-" + args.target_lang
     )
 
-    source_corpus_dir = corpus_dir + args.source_lang
-    target_corpus_dir = corpus_dir + args.target_lang
+    with open(os.path.join(corpus_dir, "source.txt"), "r") as infile:
+        source_doc = preprocess_doc_to_sents(infile.read())
 
-    source_files = os.listdir(source_corpus_dir)
-    target_files = os.listdir(target_corpus_dir)
+    with open(os.path.join(corpus_dir, "target.txt"), "r") as infile:
+        target_doc = preprocess_doc_to_sents(infile.read())
 
-    source_docs = []
-    target_docs = []
+    source_doc_chunks = generate_chunks(source_doc, args.num_chunks)
+    target_doc_chunks = generate_chunks(target_doc, args.num_chunks)
 
-    for source_file in source_files:
-        with open(os.path.join(source_corpus_dir, source_file), "r") as infile:
-            source_docs.append(preprocess_doc_to_sents(infile.read()))
+    if DEBUG:
+        print("SOURCE DOC CHUNKS")
+        print(source_doc_chunks)
+        print("-"*50)
 
-    for target_file in target_files:
-        with open(os.path.join(target_corpus_dir, target_file), "r") as infile:
-            target_docs.append(preprocess_doc_to_sents(infile.read()))
+        print("TARGET DOC CHUNKS")
+        print(target_doc_chunks)
+        print("-"*50)
 
-    for i in range(0, len(source_docs)):
-        run_experiment(
-            source_docs[i],
-            target_docs[i],
-            args.source_lang,
-            args.target_lang,
-            args.num_chunks,
-            args.url,
-        )
+    loop = asyncio.get_event_loop()
 
-    # loop = asyncio.get_event_loop()
-    # future = asyncio.ensure_future(get_data_asynchronous())
-    # loop.run_until_complete(future)
+    future = asyncio.ensure_future(run_experiment(
+        source_doc_chunks,
+        args.source_lang,
+        args.target_lang,
+        args.url,
+    ))
+
+    loop.run_until_complete(future)

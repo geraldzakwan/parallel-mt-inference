@@ -47,10 +47,8 @@ def get_prediction():
     text = request.json['text']
     chunk_num = request.json['chunk_num']
 
-    translation = translator.translate(source, target, text)
-
     return return_success({
-        "text": translation,
+        "text": translator.translate(source, target, text),
         "chunk_num": chunk_num,
     })
 
