@@ -106,10 +106,12 @@ This time around, we will use `gunicorn` so that we can spawn multiple Flask app
 Run the command below instead in the `root` directory.
 
 ```
-gunicorn app:app --workers=4 --bind localhost:5000
+gunicorn app:app --workers 4 --bind localhost:5000 --timeout 3600
 ```
 
 Big number of `workers` may cause the program to crash since the MT model is quite big.
+
+Set `timeout` for a quite long duration, i.e. 1 hour (3600 seconds).
 
 ### Run Parallel Inference
 
