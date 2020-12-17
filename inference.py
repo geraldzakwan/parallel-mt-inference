@@ -7,8 +7,6 @@ import asyncio
 from concurrent.futures import ThreadPoolExecutor
 from timeit import default_timer
 
-import  nltk.translate.bleu_score as bleu
-
 from config import *
 
 parser = argparse.ArgumentParser()
@@ -24,15 +22,6 @@ def preprocess_doc_to_sents(doc):
     doc = doc.translate(str.maketrans("", "", "\n"))
 
     return doc.split(".")
-
-def compute_average_blue_score(reference_translation, candidate_translations):
-    cumulative_blue_score = 0
-
-    for candidate_translation in candidate_translations:
-        cumulative_bleu_score += bleu.sentence_bleu(
-            reference_translation, candidate_translation)
-
-    return cumulative_bleu_score / len(candidate_translations)
 
 def generate_chunks(doc, num_chunks):
     chunk_size = len(doc) // num_chunks
@@ -95,7 +84,7 @@ async def run_experiment(source_doc_chunks, source_lang, target_lang, url):
                     print(text)
                     print("-"*50)
 
-                with open("data/result/{}-{}/{}/{}".format(source_lang, target_lang, len(source_doc_chunks), chunk_num), "w") as outfile:
+                with open("data/result/{}-{}/{}/translation_{}.txt".format(source_lang, target_lang, len(source_doc_chunks), chunk_num), "w") as outfile:
                     outfile.write(text)
 
 if __name__ == "__main__":
@@ -122,6 +111,12 @@ if __name__ == "__main__":
         print("TARGET DOC CHUNKS")
         print(target_doc_chunks)
         print("-"*50)
+
+    os.mkdir("data/result/{}-{}/{}".format(args.source_lang, args.target_lang, args.num_chunks))
+
+    for i, target_doc in enumerate(target_doc_chunks):
+        with open("data/result/{}-{}/{}/reference_{}.txt".format(args.source_lang, args.target_lang, len(target_doc_chunks), i), "w") as outfile:
+            outfile.write(target_doc)
 
     loop = asyncio.get_event_loop()
 
