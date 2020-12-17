@@ -14,11 +14,11 @@ class Translator():
     def load_model(self, route):
         model = f'opus-mt-{route}'
         path = os.path.join(self.models_dir,model)
-        try:
-            model = MarianMTModel.from_pretrained(path)
-            tok = MarianTokenizer.from_pretrained(path)
-        except:
-            return 0,f"Make sure you have downloaded model for {route} translation"
+        # try:
+        model = MarianMTModel.from_pretrained(path)
+        tok = MarianTokenizer.from_pretrained(path)
+        # except:
+        #     return 0,f"Make sure you have downloaded model for {route} translation"
         self.models[route] = (model,tok)
         return 1,f"Successfully loaded model for {route} transation"
 
@@ -29,7 +29,7 @@ class Translator():
             if not success_code:
                 return message
 
-        batch = self.models[route][1].prepare_translation_batch(src_texts=[text])
+        batch = self.models[route][1].prepare_seq2seq_batch(src_texts=[text], return_tensors="pt")
         gen = self.models[route][0].generate(**batch)
-        words: List[str] = self.models[route][1].batch_decode(gen, skip_special_tokens=True) 
+        words: List[str] = self.models[route][1].batch_decode(gen, skip_special_tokens=True)
         return words
