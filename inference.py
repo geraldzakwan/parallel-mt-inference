@@ -87,7 +87,7 @@ async def run_experiment(source_doc_chunks, source_lang, target_lang, url):
 if __name__ == "__main__":
     args = parser.parse_args()
 
-    corpus_dir = "data/parallel-corpus/{}/corpus/".format(
+    corpus_dir = "data/parallel-corpus/{}/".format(
         args.source_lang + "-" + args.target_lang
     )
 
