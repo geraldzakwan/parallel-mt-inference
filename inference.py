@@ -44,12 +44,12 @@ def generate_chunks(doc, num_chunks):
 
     return sentence_chunks
 
-def send_request(url, text, source_lang, target_lang, id):
+def send_request(url, text, source_lang, target_lang, chunk_num):
     payload = {
         "text": text,
         "source": source_lang,
         "target": target_lang,
-        "id": id,
+        "chunk_num": chunk_num,
     }
 
     print(payload)
