@@ -1,22 +1,21 @@
 import os
+import time
 import string
 import argparse
 
 import requests
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
-from timeit import default_timer
 
 from config import *
+
+DEBUG = False
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--source_lang", type=str, help="source language code")
 parser.add_argument("--target_lang", type=str, help="target language code")
 parser.add_argument("--num_chunks", type=int, help="number of chunks")
 parser.add_argument("--url", type=str, help="service endpoint")
-
-START_TIME = default_timer()
-DEBUG = False
 
 def preprocess_doc_to_sents(doc):
     doc = doc.translate(str.maketrans("", "", "\n"))
@@ -60,8 +59,6 @@ async def run_experiment(source_doc_chunks, source_lang, target_lang, url):
         with requests.Session() as session:
             loop = asyncio.get_event_loop()
 
-            START_TIME = default_timer()
-
             tasks = [
                 loop.run_in_executor(
                     executor,
@@ -100,6 +97,8 @@ if __name__ == "__main__":
     with open(os.path.join(corpus_dir, "target.txt"), "r") as infile:
         target_doc = preprocess_doc_to_sents(infile.read())
 
+    start = time.time()
+
     source_doc_chunks = generate_chunks(source_doc, args.num_chunks)
     target_doc_chunks = generate_chunks(target_doc, args.num_chunks)
 
@@ -112,10 +111,17 @@ if __name__ == "__main__":
         print(target_doc_chunks)
         print("-"*50)
 
-    os.mkdir("data/result/{}-{}/{}".format(args.source_lang, args.target_lang, args.num_chunks))
+
+    result_dir = "data/result/{}-{}/{}".format(args.source_lang, args.target_lang, args.num_chunks)
+
+    try:
+        os.mkdir(result_dir)
+    except:
+        if DEBUG:
+            print("Result directory has been created")
 
     for i, target_doc in enumerate(target_doc_chunks):
-        with open("data/result/{}-{}/{}/reference_{}.txt".format(args.source_lang, args.target_lang, len(target_doc_chunks), i), "w") as outfile:
+        with open(os.path.join(result_dir, "reference_{}.txt".format(i)), "w") as outfile:
             outfile.write(target_doc)
 
     loop = asyncio.get_event_loop()
@@ -128,3 +134,8 @@ if __name__ == "__main__":
     ))
 
     loop.run_until_complete(future)
+
+    elapsed_time = time.time() - start
+
+    with open("data/result/{}-{}/{}/elapsed_time.txt".format(args.source_lang, args.target_lang, len(target_doc_chunks)), "w") as outfile:
+        outfile.write(str(elapsed_time) + "\n")
