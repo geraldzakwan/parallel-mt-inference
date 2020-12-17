@@ -6,6 +6,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 data/opus-mt*
+data/parallel-corpus/*unicef*
 # C extensions
 *.so
 

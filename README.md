@@ -36,3 +36,4 @@ curl --location --request POST 'http://localhost:5000/translate' \
  "target":"fr"
 }'
 ```
+# pract-dl-final-project-goal-b
