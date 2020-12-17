@@ -36,20 +36,20 @@ if __name__ == "__main__":
     if not args.eval_metric.lower() in SUPPORTED_EVALUATION_METRIC:
         raise Exception("Evaluation metric is not supported, choose one from: {}".format(get_supported_eval_metric()))
 
-    result_dir = "data/result/{}-{}/{}".format(args.source_lang, args.target_lang, args.num_chunks)
+    results_dir = "data/results/{}-{}/{}".format(args.source_lang, args.target_lang, args.num_chunks)
 
     total_bleu_score = 0
 
     for i in range(0, args.num_chunks):
-        with open(os.path.join(result_dir, "translation_{}.txt".format(i)), "r") as infile:
+        with open(os.path.join(results_dir, "translation_{}.txt".format(i)), "r") as infile:
             source_doc_chunk = infile.read()
 
-        with open(os.path.join(result_dir, "reference_{}.txt".format(i)), "r") as infile:
+        with open(os.path.join(results_dir, "reference_{}.txt".format(i)), "r") as infile:
             target_doc_chunk = infile.read()
 
         total_bleu_score += compute_average_blue_score(target_doc_chunk, [source_doc_chunk])
 
     avg_blue_score = total_bleu_score / args.num_chunks
 
-    with open(os.path.join(result_dir, "bleu_score.txt"), "w") as outfile:
+    with open(os.path.join(results_dir, "bleu_score.txt"), "w") as outfile:
         outfile.write(str(avg_blue_score) + "\n")

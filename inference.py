@@ -81,7 +81,7 @@ async def run_experiment(source_doc_chunks, source_lang, target_lang, url):
                     print(text)
                     print("-"*50)
 
-                with open("data/result/{}-{}/{}/translation_{}.txt".format(source_lang, target_lang, len(source_doc_chunks), chunk_num), "w") as outfile:
+                with open("data/results/{}-{}/{}/translation_{}.txt".format(source_lang, target_lang, len(source_doc_chunks), chunk_num), "w") as outfile:
                     outfile.write(text)
 
 if __name__ == "__main__":
@@ -112,16 +112,16 @@ if __name__ == "__main__":
         print("-"*50)
 
 
-    result_dir = "data/result/{}-{}/{}".format(args.source_lang, args.target_lang, args.num_chunks)
+    results_dir = "data/results/{}-{}/{}".format(args.source_lang, args.target_lang, args.num_chunks)
 
     try:
-        os.mkdir(result_dir)
+        os.mkdir(results_dir)
     except:
         if DEBUG:
-            print("Result directory has been created")
+            print("results directory has been created")
 
     for i, target_doc in enumerate(target_doc_chunks):
-        with open(os.path.join(result_dir, "reference_{}.txt".format(i)), "w") as outfile:
+        with open(os.path.join(results_dir, "reference_{}.txt".format(i)), "w") as outfile:
             outfile.write(target_doc)
 
     loop = asyncio.get_event_loop()
@@ -137,5 +137,5 @@ if __name__ == "__main__":
 
     elapsed_time = time.time() - start
 
-    with open("data/result/{}-{}/{}/elapsed_time.txt".format(args.source_lang, args.target_lang, len(target_doc_chunks)), "w") as outfile:
+    with open("data/results/{}-{}/{}/elapsed_time.txt".format(args.source_lang, args.target_lang, len(target_doc_chunks)), "w") as outfile:
         outfile.write(str(elapsed_time) + "\n")

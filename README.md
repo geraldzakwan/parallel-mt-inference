@@ -7,7 +7,7 @@ Reference: `[Huggingface Transformers library](https://huggingface.co/Helsinki-N
 
 ### Download the Machine Translation (MT) Model
 
-First, make a directory called `data` and download a specific MT model using the command below.
+First, make a directory called `data` in `root` and download a specific MT model using the command below.
 The example provided is for `English (en)` to `French (fr)` MT model.
 
 ```
@@ -28,7 +28,7 @@ pip install -r requirements.txt
 Note that I use `PyTorch CPU` in the requirement file.
 Change it accordingly if you want to use `PyTorch GPU`.
 
-### Run the App
+### Run the Web App
 
 You can either run the app directly using `Python3`:
 
@@ -77,4 +77,89 @@ You could then expect the following response:
 
 ## How to Run Parallel Inference Experiment
 
-### Create a Directory
+### Set Up Directory Structure
+
+First, make a directory called `results` in `root`.
+
+If you want to conduct an experiment using `en-fr` MT model, then
+create another directory called `en-fr` inside `results` directory.
+
+### Set Up Your Dataset
+
+If you use `en-fr` MT model, put your dataset inside the `data/parallel-corpus/en-fr` directory.
+You should have two documents: `source.txt` in English and `target.txt` in French.
+Your directory should look like below.
+
+```
+results
+  en-fr
+    source.txt
+    target.txt
+```
+
+I put sample documents (source.txt and target.txt) for `en-fr`, please refer to them for document format.
+
+### Run the Web App
+
+Same as previous.
+
+### Run Parallel Inference
+
+Run the command below.
+
+```
+python3 inference.py --source_lang en --target_lang fr --num_chunks 2 --url http://0.0.0.0:5000/translate
+```
+
+Specify your source and target language in the param `source_lang` and `target_lang` respectively.
+
+Specify `num_chunks`, i.e. the number of document splits.
+For example, `--num_chunks 2` will split your document into two smaller
+documents with the same number of sentences each.
+
+Specify `url`, i.e. the service endpoint where you hosted your web app.
+If you run it locally, you don't need to change it.
+
+You will have outputs like below.
+
+```
+results
+  en-fr
+    2
+      elapsed_time.txt (How long the inference takes)
+      reference_0.txt (Chunk 0 of your target document)
+      reference_1.txt (Chunk 1 of your target document)
+      translation_0.txt (Chunk 0 of your translated source document)
+      translation_1.txt (Chunk 1 of your translated source document)
+```
+
+You can compare the inference time by looking at the `elapsed_time.txt` file in each corresponding directory.
+
+### Run Evaluation
+
+Finally, you should evaluate the translation result to see if the number of chunks affect translation quality.
+Currently, this project only supports `BLEU` metric.
+
+Run the command below.
+
+```
+python3 evaluate.py --eval_metric bleu --source_lang en --target_lang fr --num_chunks 2
+```
+
+Set `eval_metric` to `bleu` and the rest of the parameters are the same as previous, except you remove the `url`.
+
+Now, your directory will have one more file, `bleu_score.txt`.
+
+```
+results
+  en-fr
+    2
+      bleu_score.txt (The BLEU score for this inference scenario)
+      elapsed_time.txt (How long the inference takes)
+      reference_0.txt (Chunk 0 of your target document)
+      reference_1.txt (Chunk 1 of your target document)
+      translation_0.txt (Chunk 0 of your translated source document)
+      translation_1.txt (Chunk 1 of your translated source document)
+```
+
+You can compare the `bleu` score for each inference scenario, i.e. differing `num_chunks`, by looking at `bleu_score.txt`.
