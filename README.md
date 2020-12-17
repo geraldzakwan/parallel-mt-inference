@@ -106,7 +106,7 @@ This time around, we will use `gunicorn` so that we can spawn multiple Flask app
 Run the command below instead in the `root` directory.
 
 ```
-gunicorn app:app --workers=4
+gunicorn app:app --workers=4 --bind localhost:5000
 ```
 
 Big number of `workers` may cause the program to crash since the MT model is quite big.
@@ -116,7 +116,7 @@ Big number of `workers` may cause the program to crash since the MT model is qui
 Run the command below.
 
 ```
-python3 inference.py --source_lang en --target_lang fr --num_chunks 2 --url http://0.0.0.0:5000/translate
+python3 inference.py --source_lang en --target_lang fr --num_chunks 2 --url http://localhost:5000/translate
 ```
 
 Specify your source and target language in the param `source_lang` and `target_lang` respectively.
