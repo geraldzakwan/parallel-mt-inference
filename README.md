@@ -101,7 +101,15 @@ I put sample documents (source.txt and target.txt) for `en-fr`, please refer to 
 
 ### Run the Web App
 
-Same as previous.
+This time around, we will use `gunicorn` so that we can spawn multiple Flask app instances.
+
+Run the command below instead in the `root` directory.
+
+```
+gunicorn app:app --workers=4
+```
+
+Big number of `workers` may cause the program to crash since the MT model is quite big.
 
 ### Run Parallel Inference
 
