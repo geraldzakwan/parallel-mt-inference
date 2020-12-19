@@ -195,7 +195,7 @@ Set `eval_metric` to `bleu` and the rest of the parameters are the same as previ
 
 Or alternatively, you could also use the `evaluation_script.sh`.
 
-First, run `chmod +x inference_script.sh` to give permission to the script.
+First, run `chmod +x evaluation_script.sh` to give permission to the script.
 
 Then, run the command below.
 
@@ -231,3 +231,30 @@ Note that we have only one `bleu_score` even though we run multiple times.
 This is because the `bleu_score` will be the same and will only differ if we change the `num_chunks`.
 
 ### Summarize Experiment
+
+Rather than going to each output file to compute average elapsed time and the `BLEU` score,
+I provide a script to handle that.
+
+Run the command below.
+
+```
+python3 summarize.py --source_lang en --target_lang fr
+```
+
+Or alternatively, you could also use the `summarize_script.sh`.
+
+First, run `chmod +x summarize_script.sh` to give permission to the script.
+
+Then, run the command below.
+
+```
+./summarize_script.sh en fr
+```
+
+Where:
+
+1. Param 1 is the `source_lang`, e.g. `en`
+2. Param 2 is the `target_lang`, e.g. `fr`
+
+You should see the average `elapsed_time` and `bleu_score` for each `num_chunks` scenario,
+in my case there would be 6 summaries: `1, 2, 4, 8, 16, 32` chunks.
