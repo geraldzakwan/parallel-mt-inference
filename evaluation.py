@@ -8,10 +8,10 @@ DEBUG = False
 SUPPORTED_EVALUATION_METRIC = ["bleu"]
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--eval_metric", type=str, help="evaluation metric")
 parser.add_argument("--source_lang", type=str, help="source language code")
 parser.add_argument("--target_lang", type=str, help="target language code")
 parser.add_argument("--num_chunks", type=int, help="number of chunks")
+parser.add_argument("--eval_metric", type=str, help="evaluation metric")
 
 def get_supported_eval_metric():
     supp_metric = "["
@@ -52,5 +52,5 @@ if __name__ == "__main__":
 
     bleu_output_dir = "data/results/{}-{}/{}".format(args.source_lang, args.target_lang, args.num_chunks)
 
-    with open(os.path.join(results_dir, "bleu_score.txt"), "w") as outfile:
+    with open(os.path.join(bleu_output_dir, "bleu_score.txt"), "w") as outfile:
         outfile.write(str(bleu_score) + "\n")
