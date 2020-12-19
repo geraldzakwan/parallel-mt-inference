@@ -38,18 +38,17 @@ if __name__ == "__main__":
 
     results_dir = "data/results/{}-{}/{}".format(args.source_lang, args.target_lang, args.num_chunks)
 
-    total_bleu_score = 0
+    source_doc = ""
+    target_doc = ""
 
     for i in range(0, args.num_chunks):
         with open(os.path.join(results_dir, "translation_{}.txt".format(i)), "r") as infile:
-            source_doc_chunk = infile.read()
+            source_doc = source_doc + " " + infile.read()
 
         with open(os.path.join(results_dir, "reference_{}.txt".format(i)), "r") as infile:
-            target_doc_chunk = infile.read()
+            target_doc = target_doc + " " + infile.read()
 
-        total_bleu_score += compute_average_blue_score(target_doc_chunk, [source_doc_chunk])
-
-    avg_blue_score = total_bleu_score / args.num_chunks
+    bleu_score = compute_average_blue_score(target_doc, [source_doc])
 
     with open(os.path.join(results_dir, "bleu_score.txt"), "w") as outfile:
-        outfile.write(str(avg_blue_score) + "\n")
+        outfile.write(str(bleu_score) + "\n")
