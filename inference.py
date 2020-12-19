@@ -16,7 +16,7 @@ parser.add_argument("--source_lang", type=str, help="source language code")
 parser.add_argument("--target_lang", type=str, help="target language code")
 parser.add_argument("--num_chunks", type=int, help="number of chunks")
 parser.add_argument("--multiple_of", type=int, help="num sentences should be divisible by")
-parser.add_argument("--run_id", type=int, help="id to differ from other runs")
+parser.add_argument("--run_id", type=int, help="id to differ from other runs with the same parameters")
 parser.add_argument("--url", type=str, help="service endpoint")
 
 def preprocess_doc_to_sents(doc):
@@ -56,7 +56,7 @@ def send_request(url, text, source_lang, target_lang, chunk_num):
 
     return resp
 
-async def run_experiment(source_doc_chunks, source_lang, target_lang, url):
+async def run_experiment(source_doc_chunks, source_lang, target_lang, run_id, url):
     with ThreadPoolExecutor(max_workers=10) as executor:
         with requests.Session() as session:
             loop = asyncio.get_event_loop()
@@ -83,7 +83,7 @@ async def run_experiment(source_doc_chunks, source_lang, target_lang, url):
                     print(text)
                     print("-"*50)
 
-                with open("data/results/{}-{}/{}/translation_{}.txt".format(source_lang, target_lang, len(source_doc_chunks), chunk_num), "w") as outfile:
+                with open("data/results/{}-{}/{}/{}/translation_{}.txt".format(source_lang, target_lang, len(source_doc_chunks), run_id, chunk_num), "w") as outfile:
                     outfile.write(text)
 
 if __name__ == "__main__":
@@ -126,12 +126,6 @@ if __name__ == "__main__":
 
     results_dir = "data/results/{}-{}/{}/{}".format(args.source_lang, args.target_lang, args.num_chunks, args.run_id)
 
-    try:
-        os.mkdir(results_dir)
-    except:
-        if DEBUG:
-            print("results directory has been created")
-
     for i, target_doc in enumerate(target_doc_chunks):
         with open(os.path.join(results_dir, "reference_{}.txt".format(i)), "w") as outfile:
             outfile.write(target_doc)
@@ -142,6 +136,7 @@ if __name__ == "__main__":
         source_doc_chunks,
         args.source_lang,
         args.target_lang,
+        args.run_id,
         args.url,
     ))
 
@@ -151,5 +146,5 @@ if __name__ == "__main__":
 
     elapsed_time = time.time() - start
 
-    with open("data/results/{}-{}/{}/elapsed_time.txt".format(args.source_lang, args.target_lang, len(target_doc_chunks)), "w") as outfile:
+    with open(os.path.join(results_dir, "elapsed_time.txt"), "w") as outfile:
         outfile.write(str(elapsed_time) + "\n")
