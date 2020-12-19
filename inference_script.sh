@@ -3,8 +3,7 @@
 # Param 3: num_chunks
 # Param 4: multiple_of
 # Param 5: url
-# Param 6: eval_metric
-# Param 7: repetition
+# Param 6: repetition
 
 echo Deleting previously created result directory if any
 rm -rf data/results/"$1"-"$2"/"$3"
@@ -12,7 +11,7 @@ rm -rf data/results/"$1"-"$2"/"$3"
 echo Creating new result directory
 mkdir data/results/"$1"-"$2"/"$3"
 
-for (( i=1; i<=$7; i++ )); do
+for (( i=1; i<=$6; i++ )); do
   echo Repetition: "$i"
 
   echo Creating directory to store the result from current repetition

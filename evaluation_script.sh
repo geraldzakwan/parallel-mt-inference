@@ -4,4 +4,4 @@
 # Param 4: eval_metric
 
 echo Running evaluation script
-python3 evaluation.py --source_lang "$1$" --target_lang "$2$" --num_chunks $3$ --eval_metric "$4$"
+python3 evaluation.py --source_lang "$1" --target_lang "$2" --num_chunks "$3" --eval_metric "$4"

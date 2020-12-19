@@ -118,7 +118,7 @@ Set `timeout` for a quite long duration, i.e. 1 hour (3600 seconds).
 Run the command below.
 
 ```
-python3 inference.py --source_lang en --target_lang fr --num_chunks 2 --url http://localhost:5000/translate
+python3 inference.py --source_lang en --target_lang fr --num_chunks 2 --run_id 1 --multiple_of 32 --url http://localhost:5000/translate
 ```
 
 Specify your source and target language in the param `source_lang` and `target_lang` respectively.
@@ -130,20 +130,55 @@ documents with the same number of sentences each.
 Specify `url`, i.e. the service endpoint where you hosted your web app.
 If you run it locally, you don't need to change it.
 
+You can ignore the `run_id` for now, just set it to `1`.
+
+You can ignore the `multiple_of` as well for now, just set it to `32`.
+
 You will have outputs like below.
 
 ```
 results
-  en-fr
-    2
-      elapsed_time.txt (How long the inference takes)
-      reference_0.txt (Chunk 0 of your target document)
-      reference_1.txt (Chunk 1 of your target document)
-      translation_0.txt (Chunk 0 of your translated source document)
-      translation_1.txt (Chunk 1 of your translated source document)
+  en-fr (source_lang - target_lang)
+    2 (num_chunks)
+      1 (run_id)
+        elapsed_time.txt (How long the inference takes)
+        reference_0.txt (Chunk 0 of your target document)
+        reference_1.txt (Chunk 1 of your target document)
+        translation_0.txt (Chunk 0 of your translated source document)
+        translation_1.txt (Chunk 1 of your translated source document)
 ```
 
 You can compare the inference time by looking at the `elapsed_time.txt` file in each corresponding directory.
+
+### Run Parallel Inference Many Times
+
+To get more accurate `elapsed_time` data, we can run the inference many times.
+
+To do this, use the `inference_script.sh`.
+
+First, run `chmod +x inference_script.sh` to give permission to the script.
+
+Then, run the command below.
+
+```
+./inference_script.sh en fr 2 32 http://localhost:5000/translate 10
+```
+
+Where:
+
+1. Param 1 is the `source_lang`, e.g. `en`
+2. Param 2 is the `target_lang`, e.g. `fr`
+3. Param 3 is the `num_chunks`, e.g. `2`
+4. Param 4 is the `multiple_of`, e.g. `32`
+5. Param 5 is the `url`, e.g. `http://localhost:5000/translate`
+6. Param 6 is the `repetition`, e.g. `10`
+
+`multiple_of` is used to make sure that the number of sentences is divisible by `multiple_of`.
+
+Because in my experiment, I use `1, 2, 4, 8, 16 and 32` `num_chunks`, then I need to make sure
+that the number of sentences are divisible by `32`, by reducing them to the nearest multiplier of `32`.
+
+This way, we can allocate each chunk with the same number of sentences.
 
 ### Run Evaluation
 
@@ -153,23 +188,46 @@ Currently, this project only supports `BLEU` metric.
 Run the command below.
 
 ```
-python3 evaluate.py --eval_metric bleu --source_lang en --target_lang fr --num_chunks 2
+python3 evaluate.py --source_lang en --target_lang fr --num_chunks 2 --eval_metric bleu
 ```
 
 Set `eval_metric` to `bleu` and the rest of the parameters are the same as previous, except you remove the `url`.
+
+Or alternatively, you could also use the `evaluation_script.sh`.
+
+First, run `chmod +x inference_script.sh` to give permission to the script.
+
+Then, run the command below.
+
+```
+./evaluation_script.sh en fr 2 bleu
+```
+
+Where:
+
+1. Param 1 is the `source_lang`, e.g. `en`
+2. Param 2 is the `target_lang`, e.g. `fr`
+3. Param 3 is the `num_chunks`, e.g. `2`
+4. Param 4 is the `eval_metric`, e.g. `bleu`
 
 Now, your directory will have one more file, `bleu_score.txt`.
 
 ```
 results
-  en-fr
-    2
+  en-fr (source_lang - target_lang)
+    2 (num_chunks)
       bleu_score.txt (The BLEU score for this inference scenario)
-      elapsed_time.txt (How long the inference takes)
-      reference_0.txt (Chunk 0 of your target document)
-      reference_1.txt (Chunk 1 of your target document)
-      translation_0.txt (Chunk 0 of your translated source document)
-      translation_1.txt (Chunk 1 of your translated source document)
+      1 (run_id)
+        elapsed_time.txt (How long the inference takes)
+        reference_0.txt (Chunk 0 of your target document)
+        reference_1.txt (Chunk 1 of your target document)
+        translation_0.txt (Chunk 0 of your translated source document)
+        translation_1.txt (Chunk 1 of your translated source document)
 ```
 
 You can compare the `bleu` score for each inference scenario, i.e. differing `num_chunks`, by looking at `bleu_score.txt`.
+
+Note that we have only one `bleu_score` even though we run multiple times.
+This is because the `bleu_score` will be the same and will only differ if we change the `num_chunks`.
+
+### Summarize Experiment
