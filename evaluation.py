@@ -12,7 +12,6 @@ parser.add_argument("--eval_metric", type=str, help="evaluation metric")
 parser.add_argument("--source_lang", type=str, help="source language code")
 parser.add_argument("--target_lang", type=str, help="target language code")
 parser.add_argument("--num_chunks", type=int, help="number of chunks")
-parser.add_argument("--run_id", type=int, help="id to differ from other runs with the same parameters")
 
 def get_supported_eval_metric():
     supp_metric = "["
@@ -37,7 +36,7 @@ if __name__ == "__main__":
     if not args.eval_metric.lower() in SUPPORTED_EVALUATION_METRIC:
         raise Exception("Evaluation metric is not supported, choose one from: {}".format(get_supported_eval_metric()))
 
-    results_dir = "data/results/{}-{}/{}/{}".format(args.source_lang, args.target_lang, args.num_chunks, args.run_id)
+    results_dir = "data/results/{}-{}/{}/1".format(args.source_lang, args.target_lang, args.num_chunks)
 
     source_doc = ""
     target_doc = ""
@@ -50,6 +49,8 @@ if __name__ == "__main__":
             target_doc = target_doc + " " + infile.read()
 
     bleu_score = compute_average_blue_score(target_doc, [source_doc])
+
+    bleu_output_dir = "data/results/{}-{}/{}".format(args.source_lang, args.target_lang, args.num_chunks)
 
     with open(os.path.join(results_dir, "bleu_score.txt"), "w") as outfile:
         outfile.write(str(bleu_score) + "\n")
