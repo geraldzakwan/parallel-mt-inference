@@ -15,6 +15,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--source_lang", type=str, help="source language code")
 parser.add_argument("--target_lang", type=str, help="target language code")
 parser.add_argument("--num_chunks", type=int, help="number of chunks")
+parser.add_argument("--multiple_of", type=int, help="num sentences should be divisible by")
+parser.add_argument("--run_id", type=int, help="id to differ from other runs")
 parser.add_argument("--url", type=str, help="service endpoint")
 
 def preprocess_doc_to_sents(doc):
@@ -97,7 +99,18 @@ if __name__ == "__main__":
     with open(os.path.join(corpus_dir, "target.txt"), "r") as infile:
         target_doc = preprocess_doc_to_sents(infile.read())
 
-    start = time.time()
+    clipped_length = len(source_doc)
+
+    if len(source_doc) > len(target_doc):
+        clipped_length = len(target_doc)
+
+    if clipped_length % args.multiple_of > 0:
+        clipped_length = (clipped_length // args.multiple_of) * args.multiple_of
+
+    source_doc = source_doc[:clipped_length]
+    target_doc = target_doc[:clipped_length]
+
+    print("Using {} pairs of sentences".format(len(source_doc)))
 
     source_doc_chunks = generate_chunks(source_doc, args.num_chunks)
     target_doc_chunks = generate_chunks(target_doc, args.num_chunks)
@@ -111,8 +124,7 @@ if __name__ == "__main__":
         print(target_doc_chunks)
         print("-"*50)
 
-
-    results_dir = "data/results/{}-{}/{}".format(args.source_lang, args.target_lang, args.num_chunks)
+    results_dir = "data/results/{}-{}/{}/{}".format(args.source_lang, args.target_lang, args.num_chunks, args.run_id)
 
     try:
         os.mkdir(results_dir)
@@ -132,6 +144,8 @@ if __name__ == "__main__":
         args.target_lang,
         args.url,
     ))
+
+    start = time.time()
 
     loop.run_until_complete(future)
 
