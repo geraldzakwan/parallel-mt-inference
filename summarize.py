@@ -14,7 +14,10 @@ if __name__ == "__main__":
     results_dir = "data/results/{}-{}".format(args.source_lang, args.target_lang)
 
     num_chunks_list = os.listdir(results_dir)
-    num_chunks_list.remove(".DS_Store")
+
+    if ".DS_Store" in set(num_chunks_list):
+        num_chunks_list.remove(".DS_Store")
+
     num_chunks_list = sorted([int(n_c) for n_c in num_chunks_list])
 
     for num_chunks in num_chunks_list:
@@ -23,6 +26,9 @@ if __name__ == "__main__":
         avg_elapsed_time = 0
 
         for run_id in os.listdir(curr_num_chunk_dir):
+            if run_id == "bleu_score.txt" or run_id == ".DS_Store":
+                continue
+
             curr_result_dir = os.path.join(curr_num_chunk_dir, run_id)
 
             with open(os.path.join(curr_result_dir, "elapsed_time.txt"), "r") as infile:
